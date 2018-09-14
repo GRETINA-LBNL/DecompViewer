@@ -37,71 +37,6 @@
 
 Viewer::Viewer(const TGWindow *win, TString filename) : TGMainFrame(win,1000,800)
 {
-  /* Initialize detector segment maps... */
-   for (Int_t i=0; i<9; i++) {
-     for (Int_t j=0; j<4; j++) {
-       Q1Special[j][i] = i;
-       Q2Special[j][i] = i;
-       QNormal[j][i] = i;
-       Q1Special[j][9] = 36;
-       Q2Special[j][9] = 36;
-       QNormal[j][9] = 36;
-     }
-   }
-   for (Int_t i=10; i<19; i++) {
-     for (Int_t j=0; j<4; j++) {
-       Q1Special[j][i] = i-1;
-       Q2Special[j][i] = i-1;
-       QNormal[j][i] = i-1;
-       Q1Special[j][19] = 37;
-       Q2Special[j][19] = 37;
-       QNormal[j][19] = 37;
-     }
-   }
-   for (Int_t i=20; i<29; i++) {
-     for (Int_t j=0; j<4; j++) {
-       Q1Special[j][i] = i-2;
-       Q2Special[j][i] = i-2;
-       QNormal[j][i] = i-2;
-       Q1Special[j][29] = 38;
-       Q2Special[j][29] = 38;
-       QNormal[j][29] = 38;
-     }
-   }
-   for (Int_t i=30; i<39; i++) {
-     for (Int_t j=0; j<4; j++) {
-       Q1Special[j][i] = i-3;
-       Q2Special[j][i] = i-3;
-       QNormal[j][i] = i-3;
-       Q1Special[j][39] = 39;
-       Q2Special[j][39] = 39;
-       QNormal[j][39] = 39;
-     }
-   }
-   
-   for (Int_t i=0; i<3; i+=2) {
-     Q1Special[i][ 0] =  1; Q1Special[i][ 1] =  8; Q1Special[i][ 2] =  3; Q1Special[i][ 3] =  4;
-     Q1Special[i][ 4] = 35; Q1Special[i][ 5] =  0; Q1Special[i][ 6] =  7; Q1Special[i][ 7] = 14;
-     Q1Special[i][ 8] =  9; Q1Special[i][10] = 10; Q1Special[i][11] = 29; Q1Special[i][12] = 30;
-     Q1Special[i][13] = 13; Q1Special[i][14] = 20; Q1Special[i][15] = 15; Q1Special[i][16] = 16;
-     Q1Special[i][17] = 23; Q1Special[i][18] = 24;
-   }
-   
-   Q1Special[0][20] = 19; Q1Special[0][21] = 26; Q1Special[0][22] = 21; Q1Special[0][23] = 22;
-   Q1Special[0][24] = 17; Q1Special[0][25] = 18; Q1Special[0][26] = 25; Q1Special[0][27] = 32;
-   Q1Special[0][28] = 27; Q1Special[0][30] = 28; Q1Special[0][31] = 11; Q1Special[0][32] = 12;
-   Q1Special[0][33] = 31; Q1Special[0][34] =  2; Q1Special[0][35] = 33; Q1Special[0][36] = 34;
-   Q1Special[0][37] =  5; Q1Special[0][38] =  6;
-   
-   Q1Special[2][20] = 19; Q1Special[2][21] = 26; Q1Special[2][22] = 21; Q1Special[2][23] = 22;
-   Q1Special[2][24] = 17; Q1Special[2][25] = 18; Q1Special[2][26] = 25; Q1Special[2][27] = 32;
-   Q1Special[2][28] = 27; Q1Special[2][30] = 28; Q1Special[2][31] = 11; Q1Special[2][32] = 12;
-   Q1Special[2][33] = 31; Q1Special[2][34] =  2; Q1Special[2][35] = 33; Q1Special[2][36] = 34;
-   Q1Special[2][37] =  5; Q1Special[2][38] =  6;
-   
-   Q2Special[0][17] = 22; Q2Special[0][24] = 16;
-   Q2Special[2][17] = 22; Q2Special[2][24] = 16;
-
    /* Initialize eventNum */
    eventNum = -1;
    crystalNum = 0; crystalsInEvent = 0;
@@ -616,13 +551,13 @@ void Viewer::UpdateEventDisplay() {
     if (i<4) {
       ccPlot[i] = new TH1F(Form("CC%02d", i), 
 			   Form("CC%02d", i), 
-			   g2->xtals[crystalNum].waveAll.size()/40, 
-			   0, g2->xtals[crystalNum].waveAll.size()/40);
+			   g2->xtals[crystalNum].waveAll.size()/40 - 2, 
+			   0, g2->xtals[crystalNum].waveAll.size()/40 - 2);
     }
     segmentPlot[i] = new TH1F(Form("Segment%02d", i), 
 			      Form("Segment%02d", i), 
-			      g2->xtals[crystalNum].waveAll.size()/40, 
-			      0, g2->xtals[crystalNum].waveAll.size()/40);
+			      g2->xtals[crystalNum].waveAll.size()/40 - 2, 
+			      0, g2->xtals[crystalNum].waveAll.size()/40 - 2);
     segmentPlot[i]->SetLineColor(kBlue-2);
   }
   
@@ -630,15 +565,8 @@ void Viewer::UpdateEventDisplay() {
     for (UInt_t j=0; j<40; j++) {
       
       Int_t nCrys = (g2->xtals[crystalNum].crystalNum-1)%4;
-      Int_t segmentNumber = 0;	
+      Int_t segmentNumber = j;	
       
-      if (g2->xtals[crystalNum].quadNum==1) {
-	segmentNumber = Q1Special[nCrys][j];
-      } else if (g2->xtals[crystalNum].quadNum==2) {
-	segmentNumber = Q2Special[nCrys][j];
-      } else {
-	segmentNumber = QNormal[nCrys][j];
-      }
       if (segmentNumber >= 36 && (i >= ((j)*(g2->xtals[crystalNum].waveAll.size()/40))&&
 				  i<((j+1)*(g2->xtals[crystalNum].waveAll.size()/40)))) {
 	ccPlot[segmentNumber-36]->Fill(i-((j)*(g2->xtals[crystalNum].waveAll.size()/40)),
@@ -853,8 +781,17 @@ void Viewer::UpdateEventDisplay() {
   Float_t zPlot[16] = {0};
   Int_t nPoints = 0;
   
-  for (Int_t i=0; i<MAX_INTPTS; i++) { /* Make 'hit' segments red... */
-    if (g2->xtals[crystalNum].intpts[i].e != 0 && (i<15 || (i==15 && g2->xtals[crystalNum].intpts[i].e>0)) ) {
+  for (Int_t i=0; i<16; i++) {
+    intptsSeg[i]->SetText("");
+    intptsX[i]->SetText("");
+    intptsY[i]->SetText("");
+    intptsZ[i]->SetText("");
+    intptsR[i]->SetText("");
+    intptsE[i]->SetText("");
+  }
+
+  for (Int_t i=0; i<g2->xtals[crystalNum].numIntPts(); i++) { /* Make 'hit' segments red... */
+     if (g2->xtals[crystalNum].intpts[i].e != 0 && (i<15 || (i==15 && g2->xtals[crystalNum].intpts[i].e>0)) ) {
       segmentPlot[(Int_t)g2->xtals[crystalNum].intpts[i].segNum]->SetLineColor(kRed);
       xPlot[nPoints] = g2->xtals[crystalNum].intpts[i].xyz.X();
       yPlot[nPoints] = g2->xtals[crystalNum].intpts[i].xyz.Y();
